@@ -1,38 +1,37 @@
-import {Parser, Grammar} from 'nearley';
-import * as sidesGrammar from './sides_grammar';
+import * as sides from '../grammar/sides.ts';
 
-const sides = Grammar.fromCompiled(sidesGrammar);
-
-export function parse(input: string): (Class|Enum)[] {
-    const parser = new Parser(sides);
-    parser.feed(input);
-    console.log("OUTPUT " + JSON.stringify(parser.results[0]));
-    return parser.results[0];
+export function parse(input: string): (Class | Enum)[] {
+    return sides.parse(input);
 }
 
 export interface NameType {
-    name: string,
-    type: Type,
+    name: string;
+    type: Type;
 }
 
 export interface Type {
-    name: string,
+    name: string;
 }
 
 export interface Method extends Type {
-    static: boolean,
-    args: NameType[],
-    ret: Type,
+    args: NameType[];
+    asyncMethod: boolean;
+    ret: Type;
+    staticMethod: boolean;
 }
 
 export interface Class extends Type {
-    languages: string[],
-    methods: Method[],
-    values?: undefined,
+    languages: string[];
+    methods: Method[];
+    values?: undefined;
 }
 
 export interface Enum extends Type {
-    languages?: undefined,
-    methods?: undefined,
-    values: string[],
+    languages?: undefined;
+    methods?: undefined;
+    values: string[];
+}
+
+export interface Setting extends Type {
+    value: string;
 }

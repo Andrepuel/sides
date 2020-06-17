@@ -1,0 +1,15 @@
+{
+  "name": "sides-grammar",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "grammar": "pegjs --plugin ./node_modules/ts-pegjs/src/tspegjs.js -o sides.ts sides.pegjs"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "pegjs": "^0.10.0",
+    "ts-pegjs": "^0.2.6"
+  }
+}
