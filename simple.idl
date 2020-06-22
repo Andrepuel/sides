@@ -1,0 +1,5 @@
+Simple = interface {
+    static create(): Simple;
+    number(): i32;
+    param(a: i32, b: Simple);
+}

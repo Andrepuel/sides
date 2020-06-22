@@ -5,3 +5,4 @@ scripts:
 # Deno fmt does not support options yet
   fmt: prettier src/ --write
   precommit: vr fmt && vr lint && vr test
+  start: deno run --unstable --allow-read --allow-write src/index.ts

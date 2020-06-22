@@ -1,12 +1,12 @@
-import { assertEquals, assert } from 'https://deno.land/std/testing/asserts.ts';
-import { parse, Class, Method, Enum, Setting } from './context.ts';
+import { assert } from 'https://deno.land/std/testing/asserts.ts';
+import { assertEquals } from './assert.ts';
+import { parse, Class, Method, Enum, Setting, Context } from './context.ts';
 
 function classTest(spec: string, expected: Class): () => void {
     return () => {
         assertEquals(parse(spec)[0], expected);
     };
 }
-
 Deno.test(
     'empty class',
     classTest('Use = interface {}', {
@@ -213,3 +213,13 @@ Deno.test(
         value: 'out"ro',
     }),
 );
+
+Deno.test('c class', () => {
+    const c = new Context([
+        {
+            name: 'a_class',
+            methods: [],
+            languages: [],
+        },
+    ]);
+});
