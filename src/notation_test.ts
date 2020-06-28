@@ -1,31 +1,34 @@
 import { Node, Reader } from './notation.ts';
 import { assertEquals } from './assert.ts';
-import { suite } from './testing.ts';
+import { suite } from 'https://raw.githubusercontent.com/Andrepuel/testtree/ea4c72f0627d87c0284d0ba1952e9c33c0a1de30/mod.ts';
 
-class NodeImpl implements Node {
-    constructor(private _genCode: Node[] | string) {}
+await suite('node', async (t) => {
+    await t.suite('a node tree', async () => {
+        class NodeImpl implements Node {
+            constructor(private _genCode: Node[] | string) {}
 
-    genCode(): Node[] | string {
-        return this._genCode;
-    }
-}
+            genCode(): Node[] | string {
+                return this._genCode;
+            }
+        }
 
-suite('node', (test) => {
-    test.given(
-        'a node tree',
-        () =>
-            new NodeImpl([
-                new NodeImpl('a'),
-                new NodeImpl([new NodeImpl('b'), new NodeImpl('c')]),
-                new NodeImpl('d'),
-            ]),
-    ).it('may be converted into actual code using reader', async (node) => {
-        const reader = new Reader(node);
+        const node = new NodeImpl([
+            new NodeImpl('a'),
+            new NodeImpl([new NodeImpl('b'), new NodeImpl('c')]),
+            new NodeImpl('d'),
+        ]);
 
-        const decoder = new TextDecoder('utf-8');
-        assertEquals(
-            decoder.decode(await Deno.readAll(reader)),
-            'a\nb\nc\nd\n',
+        await t.test(
+            'may be converted into actual code using reader',
+            async () => {
+                const reader = new Reader(node);
+
+                const decoder = new TextDecoder('utf-8');
+                assertEquals(
+                    decoder.decode(await Deno.readAll(reader)),
+                    'a\nb\nc\nd\n',
+                );
+            },
         );
     });
 });

@@ -1,21 +1,28 @@
-import { assert } from 'https://deno.land/std/testing/asserts.ts';
-import { suite } from './testing.ts';
-import { parse, Class, Enum, Setting } from './context.ts';
+import { assert, assertEquals } from 'https://deno.land/std/testing/asserts.ts';
+import { suite } from 'https://raw.githubusercontent.com/Andrepuel/testtree/ea4c72f0627d87c0284d0ba1952e9c33c0a1de30/mod.ts';
+import { parse, Class, Enum, Setting, Method } from './context.ts';
 
-suite('parser', (test) => {
-    test.params<string>()
-        .given('class', (spec) => parse(spec)[0] as Class)
-        .equals('with empty spec', 'Use = interface {}', {
+suite('parser', (t) => {
+    t.suite('class', (t) => {
+        function equals(name: string, spec: string, expect: Class) {
+            t.test(name, () => {
+                assertEquals(parse(spec)[0], expect);
+            });
+        }
+
+        equals('with empty spec', 'Use = interface {}', {
             name: 'Use',
             languages: [],
             methods: [],
-        })
-        .equals('with languages', 'Use = interface +o +c {}', {
+        });
+
+        equals('with languages', 'Use = interface +o +c {}', {
             name: 'Use',
             languages: ['o', 'c'],
             methods: [],
-        })
-        .equals('with methods', 'Use = interface { bola(); quadrado(); }', {
+        });
+
+        equals('with methods', 'Use = interface { bola(); quadrado(); }', {
             name: 'Use',
             languages: [],
             methods: [
@@ -39,42 +46,44 @@ suite('parser', (test) => {
                 },
             ],
         });
+    });
 
-    test.params<string>()
-        .given('multiple elements', (spec: string) => parse(spec))
-        .equals(
-            'being enum and class',
-            'e = enum { bola; } f = interface +o { } outro = interface { } mais_enum = enum {} ',
-            [
-                {
-                    name: 'e',
-                    values: ['bola'],
-                } as Enum,
-                {
-                    name: 'f',
-                    languages: ['o'],
-                    methods: [],
-                } as Class,
-                {
-                    name: 'outro',
-                    languages: [],
-                    methods: [],
-                },
-                {
-                    name: 'mais_enum',
-                    values: [],
-                } as Enum,
-            ],
-        );
+    t.test('multiple elements', () => {
+        const spec =
+            'e = enum { bola; } f = interface +o { } outro = interface { } mais_enum = enum {} ';
+        assertEquals(parse(spec), [
+            {
+                name: 'e',
+                values: ['bola'],
+            } as Enum,
+            {
+                name: 'f',
+                languages: ['o'],
+                methods: [],
+            } as Class,
+            {
+                name: 'outro',
+                languages: [],
+                methods: [],
+            },
+            {
+                name: 'mais_enum',
+                values: [],
+            } as Enum,
+        ]);
+    });
 
-    test.params<string>()
-        .given('method', (spec: string) => {
-            let methods = parse(`Placeholder = interface { ${spec} }`)[0]
-                .methods;
-            assert(methods);
-            return methods[0];
-        })
-        .equals('with no params', 'bola();', {
+    t.suite('method', (t) => {
+        function equals(name: string, spec: string, expect: Method) {
+            t.test(name, () => {
+                let methods = parse(`Placeholder = interface { ${spec} }`)[0]
+                    .methods;
+                assert(methods);
+                assertEquals(methods[0], expect);
+            });
+        }
+
+        equals('with no params', 'bola();', {
             asyncMethod: false,
             name: 'bola',
             args: [],
@@ -82,8 +91,9 @@ suite('parser', (test) => {
             ret: {
                 name: 'void',
             },
-        })
-        .equals('being static', 'static bola();', {
+        });
+
+        equals('being static', 'static bola();', {
             asyncMethod: false,
             name: 'bola',
             args: [],
@@ -91,8 +101,9 @@ suite('parser', (test) => {
             ret: {
                 name: 'void',
             },
-        })
-        .equals('having return type', 'bola(): i8;', {
+        });
+
+        equals('having return type', 'bola(): i8;', {
             asyncMethod: false,
             name: 'bola',
             staticMethod: false,
@@ -100,8 +111,9 @@ suite('parser', (test) => {
             ret: {
                 name: 'i8',
             },
-        })
-        .equals('having args', 'bola(a: i8, b:i16);', {
+        });
+
+        equals('having args', 'bola(a: i8, b:i16);', {
             asyncMethod: false,
             name: 'bola',
             staticMethod: false,
@@ -122,8 +134,9 @@ suite('parser', (test) => {
             ret: {
                 name: 'void',
             },
-        })
-        .equals('being async', 'async bola();', {
+        });
+
+        equals('being async', 'async bola();', {
             name: 'bola',
             staticMethod: false,
             asyncMethod: true,
@@ -131,17 +144,9 @@ suite('parser', (test) => {
             ret: {
                 name: 'void',
             },
-        })
-        .equals('being async and static', 'async static bola();', {
-            name: 'bola',
-            staticMethod: true,
-            asyncMethod: true,
-            args: [],
-            ret: {
-                name: 'void',
-            },
-        })
-        .equals('being static and async', 'static async bola();', {
+        });
+
+        equals('being async and static', 'async static bola();', {
             name: 'bola',
             staticMethod: true,
             asyncMethod: true,
@@ -151,18 +156,37 @@ suite('parser', (test) => {
             },
         });
 
-    test.params<string>()
-        .given('setting', (spec: string) => parse(spec)[0] as Setting)
-        .equals('using legacy format', '# ola = "valor" #', {
+        equals('being static and async', 'static async bola();', {
+            name: 'bola',
+            staticMethod: true,
+            asyncMethod: true,
+            args: [],
+            ret: {
+                name: 'void',
+            },
+        });
+    });
+
+    t.suite('setting', (t) => {
+        function equals(name: string, spec: string, expect: Setting) {
+            t.test(name, () => {
+                assertEquals(parse(spec)[0], expect);
+            });
+        }
+
+        equals('using legacy format', '# ola = "valor" #', {
             name: 'ola',
             value: 'valor',
-        })
-        .equals('using equals based format', 'ola = "valor"', {
+        });
+
+        equals('using equals based format', 'ola = "valor"', {
             name: 'ola',
             value: 'valor',
-        })
-        .equals('using escaped string', 'ola = "out\\"ro"', {
+        });
+
+        equals('using escaped string', 'ola = "out\\"ro"', {
             name: 'ola',
             value: 'out"ro',
         });
+    });
 });
