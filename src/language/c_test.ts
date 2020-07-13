@@ -16,6 +16,10 @@ suite('c', (t) => {
         t.test('param name matches C type name', () =>
             assertEquals(primitive.paramname, 'int'),
         );
+
+        t.test('stub is undefined', () => {
+            assertEquals(primitive.stub, undefined);
+        });
     });
 
     t.suite('primitive type', (t) => {
@@ -41,6 +45,7 @@ suite('c', (t) => {
     const simpleCtype: c.Type = {
         name: 'custom',
         paramname: 'custom_t*',
+        stub: undefined,
     };
 
     class CoisaFunction extends c.Function {
@@ -86,8 +91,8 @@ suite('c', (t) => {
     t.suite('class with methods', (t) => {
         const clss = new CoisaClass([new CoisaFunction()]);
 
-        t.test('code will be stub followed by functions', () => {
-            assertEquals(clss.genCode(), [clss.stub, new CoisaFunction()]);
+        t.test('code will be functions', () => {
+            assertEquals(clss.genCode(), [new CoisaFunction()]);
         });
     });
 
@@ -109,6 +114,49 @@ suite('c', (t) => {
         });
     });
 
+    t.suite('c class file', (t) => {
+        const clss = new CoisaClass();
+        const file = new c.ClassFile(clss);
+
+        t.test('is named after the class with .h extension', () => {
+            assertEquals(file.name, 'coisa.h');
+        });
+
+        t.test('content is the class itself and stub', () => {
+            assertEquals(file.content, [clss.stub, clss]);
+        });
+
+        t.suite('and function with deps', (t) => {
+            const clss2 = new CoisaClass();
+            clss2.name = 'two_t';
+            const functionWithDeps = new CoisaFunction([
+                { name: 'two', type: clss2 },
+            ]);
+            clss.methods.push(functionWithDeps);
+            t.test('it includes external dependencies on args as stub', () => {
+                assertEquals(file.content, [clss2.stub, clss.stub, clss]);
+            });
+
+            t.test('it includes external dependencies on ret as stub', () => {
+                const clss3 = new CoisaClass();
+                clss3.name = 'three_t';
+                functionWithDeps.ret = clss3;
+                assertEquals(file.content, [
+                    clss2.stub,
+                    clss3.stub,
+                    clss.stub,
+                    clss,
+                ]);
+            });
+
+            t.test('it does not repeat types', () => {
+                functionWithDeps.args.push({ name: 'other', type: clss });
+                functionWithDeps.args.push({ name: 'twoAgain', type: clss2 });
+                assertEquals(file.content, [clss2.stub, clss.stub, clss]);
+            });
+        });
+    });
+
     t.suite('class', (t) => {
         const clss = new CoisaClass();
 
@@ -122,14 +170,6 @@ suite('c', (t) => {
 
         t.suite("'s file", (t) => {
             const file = clss.file();
-
-            t.test('is named after the class with .h extension', () => {
-                assertEquals(file.name, 'coisa.h');
-            });
-
-            t.test('content is the class itself', () => {
-                assertEquals(file.content, [clss]);
-            });
         });
     });
 

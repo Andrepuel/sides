@@ -2,4 +2,9 @@ Simple = class {
     static create(): Simple;
     number(): i32;
     param(a: i32, b: Simple);
+    ret(): Other;
+}
+
+Other = class {
+    nu(): i32;
 }

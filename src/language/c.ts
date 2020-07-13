@@ -4,12 +4,29 @@ import { Node } from '../notation.ts';
 import { Identifier } from '../identifier.ts';
 import { some } from '../assert.ts';
 
+function isDefined<T>(a: T | undefined): a is T {
+    return a !== undefined;
+}
+
+function distinct<K, T>(index: Set<K>, keyCb: (t: T) => K): (t: T) => boolean {
+    return (t) => {
+        const key = keyCb(t);
+        if (index.has(key)) {
+            return false;
+        }
+
+        index.add(key);
+        return true;
+    };
+}
+
 export interface Context {
     cType(name: string): Type | undefined;
 }
 
 export interface Type extends ctx.Type {
     paramname: string;
+    stub: Stub | undefined;
 }
 
 export type Method = ctx.Method<Type> & Node;
@@ -42,6 +59,10 @@ export class PrimitiveType implements Type {
 
         assert(false, 'unknown type ' + this.name);
         return '';
+    }
+
+    public get stub(): undefined {
+        return;
     }
 }
 
@@ -77,15 +98,12 @@ export abstract class Class implements Type, Node {
     abstract get name(): string;
     abstract get methods(): Function[];
 
-    public get stub(): Stub | undefined {
+    public get stub(): Stub {
         return new Stub(this.name);
     }
 
     public genCode(): Node[] {
-        const stub: Node | undefined = this.stub;
-        assert(stub);
-
-        return [stub].concat(this.methods);
+        return this.methods;
     }
 
     public get paramname(): string {
@@ -124,7 +142,20 @@ export class ClassFile extends File {
     }
 
     get content(): Node[] {
-        return [this.clss];
+        const repeated = new Set<string>();
+        repeated.add(this.clss.name);
+
+        const typeStubs: Node[] = this.clss.methods
+            .map((method) =>
+                method.args
+                    .map((y) => y.type)
+                    .concat([method.ret])
+                    .filter(distinct(repeated, (type) => type.name))
+                    .map((type) => type.stub)
+                    .filter(isDefined),
+            )
+            .reduce((a, b) => a.concat(b), []);
+        return typeStubs.concat([this.clss.stub!, this.clss]);
     }
 }
 
