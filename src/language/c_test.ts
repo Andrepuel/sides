@@ -240,7 +240,7 @@ suite('c', (t) => {
             const sidesDeinit: ctx.Method = {
                 args: [],
                 asyncMethod: false,
-                name: 'sides_deinit',
+                name: '_sides_deinit',
                 ret: {
                     name: 'void',
                 },

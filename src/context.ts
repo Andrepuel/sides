@@ -60,7 +60,7 @@ export class Context implements c.Context {
         const deinit: Method = {
             args: [],
             asyncMethod: false,
-            name: 'sides_deinit',
+            name: '_sides_deinit',
             ret: {
                 name: 'void',
             },
