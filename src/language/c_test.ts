@@ -178,10 +178,10 @@ suite('c', (t) => {
         const context = new CContext();
 
         t.suite('spec based c static method', (t) => {
-            const method = new c.SpecMethod(staticSpec, context);
+            const method = new c.SpecMethod(new CoisaClass(), staticSpec, context);
 
             t.test('name is snake case', () => {
-                assertEquals(method.name, 'a_method');
+                assertEquals(method.name, 'coisa_a_method');
             });
 
             t.test('args are converted to c types', () => {
@@ -267,7 +267,7 @@ suite('c', (t) => {
 
                 t.test('methods are converted to spec methods', () => {
                     assertEquals(clss.methods, [
-                        new c.SpecMethod(staticSpec, context),
+                        new c.SpecMethod(clss, staticSpec, context),
                         new c.MemberSpecMethod(clss, memberSpec, context),
                     ]);
                 });

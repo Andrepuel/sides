@@ -20,6 +20,10 @@ export class Identifier {
         return new Identifier(comps);
     }
 
+    public static fromSnake(snake: string): Identifier {
+        return new Identifier(snake.split('_'));
+    }
+
     public toSnake(): string {
         return this.comps.join('_');
     }

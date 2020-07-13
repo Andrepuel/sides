@@ -18,4 +18,12 @@ suite('identifier', (t) => {
             'world',
         ]);
     });
+
+    t.test('may be created from snake case', () => {
+        assertEquals(Identifier.fromSnake('hello_pretty_world').comps, [
+            'hello',
+            'pretty',
+            'world',
+        ]);
+    });
 });

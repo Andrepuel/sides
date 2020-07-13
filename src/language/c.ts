@@ -129,12 +129,15 @@ export class ClassFile extends File {
 }
 
 export class SpecMethod extends Function {
-    constructor(public spec: ctx.Method, protected ctx: Context) {
+    constructor(public self: Type, public spec: ctx.Method, protected ctx: Context) {
         super();
     }
 
     get name(): string {
-        return Identifier.fromCamel(this.spec.name).toSnake();
+        const name = Identifier.fromSnake(this.self.name);
+        assert(name.comps.pop() == 't');
+        name.comps = name.comps.concat(Identifier.fromCamel(this.spec.name).comps);
+        return name.toSnake();
     }
     get args(): NameType[] {
         return this.spec.args.map((a) => ({
@@ -159,8 +162,8 @@ export class SpecMethod extends Function {
 }
 
 export class MemberSpecMethod extends SpecMethod {
-    constructor(private self: Type, spec: ctx.Method, ctx: Context) {
-        super(spec, ctx);
+    constructor(self: Type, spec: ctx.Method, ctx: Context) {
+        super(self, spec, ctx);
     }
 
     get args(): NameType[] {
@@ -191,7 +194,7 @@ export class ClassSpec extends Class {
     get methods(): Function[] {
         return this.spec.methods.map((spec) =>
             spec.staticMethod
-                ? new SpecMethod(spec, this.ctx)
+                ? new SpecMethod(this, spec, this.ctx)
                 : new MemberSpecMethod(this, spec, this.ctx),
         );
     }
