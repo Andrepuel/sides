@@ -71,7 +71,7 @@ export class Context implements c.Context {
                 return {
                     ...x,
                     methods: [deinit].concat(x.methods),
-                }
+                };
             } else {
                 return x;
             }

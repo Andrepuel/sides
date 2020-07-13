@@ -178,7 +178,11 @@ suite('c', (t) => {
         const context = new CContext();
 
         t.suite('spec based c static method', (t) => {
-            const method = new c.SpecMethod(new CoisaClass(), staticSpec, context);
+            const method = new c.SpecMethod(
+                new CoisaClass(),
+                staticSpec,
+                context,
+            );
 
             t.test('name is snake case', () => {
                 assertEquals(method.name, 'coisa_a_method');
@@ -245,7 +249,7 @@ suite('c', (t) => {
                     name: 'void',
                 },
                 staticMethod: false,
-            }
+            };
 
             const classSpec: ctx.Class = {
                 name: 'CoisaDeCamelo',

@@ -129,14 +129,20 @@ export class ClassFile extends File {
 }
 
 export class SpecMethod extends Function {
-    constructor(public self: Type, public spec: ctx.Method, protected ctx: Context) {
+    constructor(
+        public self: Type,
+        public spec: ctx.Method,
+        protected ctx: Context,
+    ) {
         super();
     }
 
     get name(): string {
         const name = Identifier.fromSnake(this.self.name);
         assert(name.comps.pop() == 't');
-        name.comps = name.comps.concat(Identifier.fromCamel(this.spec.name).comps);
+        name.comps = name.comps.concat(
+            Identifier.fromCamel(this.spec.name).comps,
+        );
         return name.toSnake();
     }
     get args(): NameType[] {
