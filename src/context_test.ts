@@ -10,19 +10,19 @@ suite('parser', (t) => {
             });
         }
 
-        equals('with empty spec', 'Use = interface {}', {
+        equals('with empty spec', 'Use = class {}', {
             name: 'Use',
             languages: [],
             methods: [],
         });
 
-        equals('with languages', 'Use = interface +o +c {}', {
+        equals('with languages', 'Use = class +o +c {}', {
             name: 'Use',
             languages: ['o', 'c'],
             methods: [],
         });
 
-        equals('with methods', 'Use = interface { bola(); quadrado(); }', {
+        equals('with methods', 'Use = class { bola(); quadrado(); }', {
             name: 'Use',
             languages: [],
             methods: [
@@ -50,7 +50,7 @@ suite('parser', (t) => {
 
     t.test('multiple elements', () => {
         const spec =
-            'e = enum { bola; } f = interface +o { } outro = interface { } mais_enum = enum {} ';
+            'e = enum { bola; } f = class +o { } outro = class { } mais_enum = enum {} ';
         assertEquals(parse(spec), [
             {
                 name: 'e',
@@ -76,7 +76,7 @@ suite('parser', (t) => {
     t.suite('method', (t) => {
         function equals(name: string, spec: string, expect: Method) {
             t.test(name, () => {
-                let methods = parse(`Placeholder = interface { ${spec} }`)[0]
+                let methods = parse(`Placeholder = class { ${spec} }`)[0]
                     .methods;
                 assert(methods);
                 assertEquals(methods[0], expect);

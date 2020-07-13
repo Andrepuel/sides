@@ -178,8 +178,8 @@ function peg$parse(input: string, options?: IParseOptions) {
   const peg$c1 = "=";
   const peg$c2 = peg$literalExpectation("=", false);
   const peg$c3 = function(name: any, t: any): any { return {...t, name:name }; };
-  const peg$c4 = "interface";
-  const peg$c5 = peg$literalExpectation("interface", false);
+  const peg$c4 = "class";
+  const peg$c5 = peg$literalExpectation("class", false);
   const peg$c6 = "{";
   const peg$c7 = peg$literalExpectation("{", false);
   const peg$c8 = "}";
@@ -486,7 +486,7 @@ function peg$parse(input: string, options?: IParseOptions) {
   function peg$parsedeclaration_value(): any {
     let s0;
 
-    s0 = peg$parseinterface();
+    s0 = peg$parseclass();
     if (s0 === peg$FAILED) {
       s0 = peg$parseenum();
       if (s0 === peg$FAILED) {
@@ -497,13 +497,13 @@ function peg$parse(input: string, options?: IParseOptions) {
     return s0;
   }
 
-  function peg$parseinterface(): any {
+  function peg$parseclass(): any {
     let s0, s1, s2, s3, s4, s5, s6, s7;
 
     s0 = peg$currPos;
-    if (input.substr(peg$currPos, 9) === peg$c4) {
+    if (input.substr(peg$currPos, 5) === peg$c4) {
       s1 = peg$c4;
-      peg$currPos += 9;
+      peg$currPos += 5;
     } else {
       s1 = peg$FAILED;
       if (peg$silentFails === 0) { peg$fail(peg$c5); }
