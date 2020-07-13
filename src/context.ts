@@ -41,6 +41,7 @@ export interface Setting extends Type {
 }
 
 export class Context implements c.Context {
+    private elements: Element[];
     private primitives = [
         'i8',
         'i16',
@@ -55,7 +56,27 @@ export class Context implements c.Context {
         'void',
     ];
 
-    public constructor(private elements: Element[]) {}
+    public constructor(elements: Element[]) {
+        const deinit: Method = {
+            args: [],
+            asyncMethod: false,
+            name: 'sides_deinit',
+            ret: {
+                name: 'void',
+            },
+            staticMethod: false,
+        };
+        this.elements = elements.map((x) => {
+            if (x.methods) {
+                return {
+                    ...x,
+                    methods: [deinit].concat(x.methods),
+                }
+            } else {
+                return x;
+            }
+        });
+    }
 
     public cType(name: string): c.Type | undefined {
         if (this.primitives.find((x) => x === name)) {

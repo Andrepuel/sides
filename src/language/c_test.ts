@@ -237,10 +237,25 @@ suite('c', (t) => {
         });
 
         t.suite('given a class specification,', (t) => {
+            const sidesDeinit: ctx.Method = {
+                args: [],
+                asyncMethod: false,
+                name: 'sides_deinit',
+                ret: {
+                    name: 'void',
+                },
+                staticMethod: false,
+            }
+
             const classSpec: ctx.Class = {
                 name: 'CoisaDeCamelo',
                 languages: [],
                 methods: [staticSpec, memberSpec],
+            };
+
+            const classWithDeinit: ctx.Class = {
+                ...classSpec,
+                methods: [sidesDeinit].concat(classSpec.methods),
             };
 
             t.suite('the spec based class', (t) => {
@@ -264,7 +279,7 @@ suite('c', (t) => {
                 t.test('cType of a class is a c.Class', () => {
                     assertEquals(
                         context.cType('CoisaDeCamelo'),
-                        new c.ClassSpec(classSpec, context),
+                        new c.ClassSpec(classWithDeinit, context),
                     );
                 });
 
