@@ -5,7 +5,12 @@
 
 start = d:(declaration / legacy_setting)* _ { return d; }
 declaration = _ name:identifier _ "=" _ t:declaration_value { return {...t, name:name }; }
-declaration_value = class / enum / setting_value
+declaration_value = class / interface / enum / setting_value
+interface = "interface" _ "{" methods:method* _ "}" {
+    return {
+        methods,
+    }
+}
 class = "class" languages:language* _ "{" methods:method* _ "}" {
     return {
         languages,

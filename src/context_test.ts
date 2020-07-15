@@ -1,6 +1,6 @@
 import { assert, assertEquals } from 'https://deno.land/std/testing/asserts.ts';
 import { suite } from 'https://raw.githubusercontent.com/Andrepuel/testtree/ea4c72f0627d87c0284d0ba1952e9c33c0a1de30/mod.ts';
-import { parse, Class, Enum, Setting, Method } from './context.ts';
+import { parse, Class, Enum, Setting, Method, Interface, StaticMethodIntoClass } from './context.ts';
 
 suite('parser', (t) => {
     t.suite('class', (t) => {
@@ -45,6 +45,55 @@ suite('parser', (t) => {
                     staticMethod: false,
                 },
             ],
+        });
+    });
+
+    t.suite('interface', (t) => {
+        function equals(name: string, spec: string, expect: Interface) {
+            t.test(name, () => {
+                assertEquals(parse(spec)[0], expect);
+            });
+        }
+
+        equals('with empty spec', 'Use = interface {}', {
+            name: 'Use',
+            methods: [],
+        });
+
+        equals('with methods', 'Use = interface { bola(); quadrado(); }', {
+            name: 'Use',
+            methods: [
+                {
+                    asyncMethod: false,
+                    args: [],
+                    name: 'bola',
+                    ret: {
+                        name: 'void',
+                    },
+                    staticMethod: false,
+                },
+                {
+                    asyncMethod: false,
+                    args: [],
+                    name: 'quadrado',
+                    ret: {
+                        name: 'void',
+                    },
+                    staticMethod: false,
+                },
+            ]
+        });
+
+        t.test('with static methods will fail', () => {
+            try {
+                parse('Use = interface { static bola(); }');
+                assert(false);
+            } catch(e) {
+                assert(e instanceof StaticMethodIntoClass);
+                assertEquals(e.name, 'Use');
+                assertEquals(e.method, 'bola');
+                assertEquals(e.message, 'Interfaces may not have static method (Use::bola)');
+            }
         });
     });
 

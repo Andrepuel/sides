@@ -1,10 +1,27 @@
 import * as sides from '../grammar/sides.ts';
 import * as c from './language/c.ts';
 
-export type Element = Class | Enum | Setting;
+export class StaticMethodIntoClass extends Error {
+    public constructor(public readonly name: string, public readonly method: string) {
+        super(`Interfaces may not have static method (${name}::${method})`);
+    }
+}
+
+export type Element = Class | Interface | Enum | Setting;
 
 export function parse(input: string): Element[] {
-    return sides.parse(input);
+    const r: Element[] = sides.parse(input);
+    r.forEach((element) => {
+        if (element.methods && element.languages === undefined) {
+            const interfac: Interface = element;
+            interfac.methods.forEach((method) => {
+                if (method.staticMethod) {
+                    throw new StaticMethodIntoClass(interfac.name, method.name);
+                }
+            });
+        }
+    });
+    return r;
 }
 
 export interface NameType<T = Type> {
@@ -25,6 +42,12 @@ export interface Method<T = Type> extends Type {
 
 export interface Class<T = Type> extends Type {
     languages: string[];
+    methods: Method<T>[];
+    values?: undefined;
+}
+
+export interface Interface<T = Type> extends Type {
+    languages?: undefined;
     methods: Method<T>[];
     values?: undefined;
 }
@@ -84,7 +107,7 @@ export class Context implements c.Context {
         }
 
         const element = this.element(name);
-        if (element?.methods) {
+        if (element?.methods && element?.languages) {
             return new c.ClassSpec(element, this);
         }
 
