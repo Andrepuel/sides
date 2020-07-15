@@ -236,3 +236,29 @@ export class ClassSpec extends Class {
         );
     }
 }
+
+export class FunctionPointer implements Method {
+    constructor(private method: Method) {
+    }
+
+    get name(): string {
+        return this.method.name;
+    }
+    get args(): NameType[] {
+        return this.method.args;
+    }
+    get ret(): Type {
+        return this.method.ret;
+    }
+    get asyncMethod(): boolean {
+        return this.method.asyncMethod;
+    }
+    get staticMethod(): boolean {
+        return this.method.staticMethod;
+    }
+
+    genCode(): string {
+        const args = this.args.map((arg) => `${arg.type.paramname} ${arg.name}`).join(', ');
+        return `${this.ret.paramname} (*${this.name})(${args})`;
+    }
+}

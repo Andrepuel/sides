@@ -354,4 +354,49 @@ suite('c', (t) => {
             });
         });
     });
+
+    t.suite('function pointer', (t) => {
+        const args = [
+            {
+                name: 'a1',
+                type: new CoisaClass(),
+            }
+        ];
+        const underlying = new CoisaFunction(args);
+        const functionPointer = new c.FunctionPointer(underlying);
+
+        t.test('has the same name as the underlying function', () => {
+            assertEquals(functionPointer.name, 'coisa');
+        });
+
+        t.test('has the same args as the underlying function', () => {
+            assertEquals(functionPointer.args, args);
+        });
+
+        t.test('has the same ret as the underlying function', () => {
+            assertEquals(functionPointer.ret, simpleCtype);
+        });
+
+        t.test('is async if underlying function is', () => {
+            [true, false].forEach((isAsync) => {
+                underlying.asyncMethod = isAsync;
+                assertEquals(functionPointer.asyncMethod, isAsync);
+            });
+        });
+
+        t.test('is static if underlying function is', () => {
+            [true, false].forEach((isStatic) => {
+                underlying.staticMethod = isStatic;
+                assertEquals(functionPointer.staticMethod, isStatic);
+            });
+        });
+
+        t.test('gencode will be function name in the asterisk syntax', () => {
+            underlying.args.push({
+                name: 'a2',
+                type: new c.PrimitiveType('i32'),
+            })
+            assertEquals(functionPointer.genCode(), 'custom_t* (*coisa)(coisa_t* a1, int a2)');
+        });
+    });
 });
