@@ -238,8 +238,7 @@ export class ClassSpec extends Class {
 }
 
 export class FunctionPointer implements Method {
-    constructor(private method: Method) {
-    }
+    constructor(private method: Method) {}
 
     get name(): string {
         return this.method.name;
@@ -258,7 +257,9 @@ export class FunctionPointer implements Method {
     }
 
     genCode(): string {
-        const args = this.args.map((arg) => `${arg.type.paramname} ${arg.name}`).join(', ');
+        const args = this.args
+            .map((arg) => `${arg.type.paramname} ${arg.name}`)
+            .join(', ');
         return `${this.ret.paramname} (*${this.name})(${args})`;
     }
 }

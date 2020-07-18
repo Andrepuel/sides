@@ -1,6 +1,14 @@
 import { assert, assertEquals } from 'https://deno.land/std/testing/asserts.ts';
 import { suite } from 'https://raw.githubusercontent.com/Andrepuel/testtree/ea4c72f0627d87c0284d0ba1952e9c33c0a1de30/mod.ts';
-import { parse, Class, Enum, Setting, Method, Interface, StaticMethodIntoClass } from './context.ts';
+import {
+    parse,
+    Class,
+    Enum,
+    Setting,
+    Method,
+    Interface,
+    StaticMethodIntoClass,
+} from './context.ts';
 
 suite('parser', (t) => {
     t.suite('class', (t) => {
@@ -81,18 +89,21 @@ suite('parser', (t) => {
                     },
                     staticMethod: false,
                 },
-            ]
+            ],
         });
 
         t.test('with static methods will fail', () => {
             try {
                 parse('Use = interface { static bola(); }');
                 assert(false);
-            } catch(e) {
+            } catch (e) {
                 assert(e instanceof StaticMethodIntoClass);
                 assertEquals(e.name, 'Use');
                 assertEquals(e.method, 'bola');
-                assertEquals(e.message, 'Interfaces may not have static method (Use::bola)');
+                assertEquals(
+                    e.message,
+                    'Interfaces may not have static method (Use::bola)',
+                );
             }
         });
     });

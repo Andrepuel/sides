@@ -360,7 +360,7 @@ suite('c', (t) => {
             {
                 name: 'a1',
                 type: new CoisaClass(),
-            }
+            },
         ];
         const underlying = new CoisaFunction(args);
         const functionPointer = new c.FunctionPointer(underlying);
@@ -395,8 +395,11 @@ suite('c', (t) => {
             underlying.args.push({
                 name: 'a2',
                 type: new c.PrimitiveType('i32'),
-            })
-            assertEquals(functionPointer.genCode(), 'custom_t* (*coisa)(coisa_t* a1, int a2)');
+            });
+            assertEquals(
+                functionPointer.genCode(),
+                'custom_t* (*coisa)(coisa_t* a1, int a2)',
+            );
         });
     });
 });

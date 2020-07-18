@@ -2,7 +2,10 @@ import * as sides from '../grammar/sides.ts';
 import * as c from './language/c.ts';
 
 export class StaticMethodIntoClass extends Error {
-    public constructor(public readonly name: string, public readonly method: string) {
+    public constructor(
+        public readonly name: string,
+        public readonly method: string,
+    ) {
         super(`Interfaces may not have static method (${name}::${method})`);
     }
 }
