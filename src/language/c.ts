@@ -352,7 +352,9 @@ export class InterfaceStruct extends Struct {
 }
 
 export abstract class Interface implements Type, Node, ctx.Interface<Type> {
-    private struct = new InterfaceStruct(this);
+    private get struct() {
+        return new InterfaceStruct(this);
+    }
 
     abstract get name(): string;
     abstract get methods(): Function[];
@@ -366,7 +368,15 @@ export abstract class Interface implements Type, Node, ctx.Interface<Type> {
     }
 
     genCode(): Node[] {
-        return [new Vtable(this, this.methods), new InterfaceStruct(this)];
+        return [
+            this.struct.stub,
+            new Vtable(this, this.methods),
+            new InterfaceStruct(this),
+        ];
+    }
+
+    file(): File {
+        return new ClassFile(this);
     }
 }
 
@@ -376,7 +386,11 @@ export class Vtable extends Struct {
     }
 
     get name(): string {
-        return this.self.name;
+        const id = Identifier.fromSnake(this.self.name);
+        const underlineT = id.comps.pop();
+        assert(underlineT);
+        id.comps.push('_sides', 'vtable', underlineT);
+        return id.toSnake();
     }
 
     get members(): NameType[] {

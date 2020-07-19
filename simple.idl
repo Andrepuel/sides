@@ -5,6 +5,7 @@ Simple = class {
     ret(): Other;
 }
 
-Other = class {
+Other = interface {
     nu(): i32;
+    parent(): Simple;
 }

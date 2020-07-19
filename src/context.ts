@@ -110,8 +110,12 @@ export class Context implements c.Context {
         }
 
         const element = this.element(name);
-        if (element?.methods && element?.languages) {
-            return new c.ClassSpec(element, this);
+        if (element?.methods) {
+            if (element?.languages) {
+                return new c.ClassSpec(element, this);
+            } else {
+                return new c.InterfaceSpec(element, this);
+            }
         }
 
         return;

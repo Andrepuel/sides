@@ -301,8 +301,13 @@ suite('c', (t) => {
             };
 
             const vtableSpec: ctx.Interface = {
-                name: 'CoisaDeCamelo',
-                methods: [sidesDeinit, memberSpec],
+                name: 'VtableDeCamelo',
+                methods: [memberSpec],
+            };
+
+            const vtableSpecWithDeinit: ctx.Interface = {
+                ...vtableSpec,
+                methods: [sidesDeinit].concat(vtableSpec.methods),
             };
 
             t.suite('the spec based class', (t) => {
@@ -321,10 +326,13 @@ suite('c', (t) => {
             });
 
             t.suite('the spec based interface', (t) => {
-                const interfac = new c.InterfaceSpec(vtableSpec, context);
+                const interfac = new c.InterfaceSpec(
+                    vtableSpecWithDeinit,
+                    context,
+                );
 
                 t.test('name is camel case followed by t', () => {
-                    assertEquals(interfac.name, 'coisa_de_camelo_t');
+                    assertEquals(interfac.name, 'vtable_de_camelo_t');
                 });
 
                 t.test('functions are member methods', () => {
@@ -336,12 +344,19 @@ suite('c', (t) => {
             });
 
             t.suite("the main context's", (t) => {
-                const context = new ctx.Context([classSpec]);
+                const context = new ctx.Context([classSpec, vtableSpec]);
 
                 t.test('cType of a class is a c.Class', () => {
                     assertEquals(
                         context.cType('CoisaDeCamelo'),
                         new c.ClassSpec(classWithDeinit, context),
+                    );
+                });
+
+                t.test('cType of a interface is a c.Interface', () => {
+                    assertEquals(
+                        context.cType('VtableDeCamelo'),
+                        new c.InterfaceSpec(vtableSpecWithDeinit, context),
                     );
                 });
 
@@ -485,8 +500,8 @@ suite('c', (t) => {
             new CoisaFunction(args),
         ]);
 
-        t.test('name is the name of the self', () => {
-            assertEquals(vtable.name, 'coisa_t');
+        t.test('name is the name of the self append with vtable', () => {
+            assertEquals(vtable.name, 'coisa__sides_vtable_t');
         });
 
         t.test('members is a function pointer of each method', () => {
@@ -533,11 +548,16 @@ suite('c', (t) => {
             assertEquals(coisa.stub, new c.Stub('coisa_t'));
         });
 
-        t.test('gencode is vtable and struct', () => {
+        t.test('gencode is stub, vtable and struct', () => {
             assertEquals(coisa.genCode(), [
+                new c.Stub('coisa_t'),
                 new c.Vtable(coisa, [new CoisaFunction()]),
                 struct,
             ]);
+        });
+
+        t.test('file is a c.classfile', () => {
+            assertEquals(coisa.file(), new c.ClassFile(coisa));
         });
 
         t.suite('file', (t) => {

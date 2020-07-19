@@ -13,7 +13,7 @@ await ensureDir(outdir);
 
 for (let elem of elems) {
     const cElem = context.cType(elem.name);
-    assert(cElem instanceof c.Class);
+    assert(cElem instanceof c.Class || cElem instanceof c.Interface);
     const file = cElem.file();
     const open = await Deno.open(`${outdir}/${file.name}`, {
         create: true,
