@@ -3,7 +3,7 @@ import { assertEquals } from '../assert.ts';
 import * as c from './c.ts';
 import * as ctx from '../context.ts';
 import { Node } from '../notation.ts';
-import { suite } from 'https://raw.githubusercontent.com/Andrepuel/testtree/ea4c72f0627d87c0284d0ba1952e9c33c0a1de30/mod.ts';
+import { suite } from 'https://raw.githubusercontent.com/Andrepuel/testtree/bceb00dbaa889b88513dc2d31730807524f4c1d0/mod.ts';
 
 suite('c', (t) => {
     t.suite('primitive int', (t) => {

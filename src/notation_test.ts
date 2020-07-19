@@ -1,9 +1,9 @@
-import { Node, Reader } from './notation.ts';
+import { Node, Reader, codeToString } from './notation.ts';
 import { assertEquals } from './assert.ts';
-import { suite } from 'https://raw.githubusercontent.com/Andrepuel/testtree/ea4c72f0627d87c0284d0ba1952e9c33c0a1de30/mod.ts';
+import { suite } from 'https://raw.githubusercontent.com/Andrepuel/testtree/bceb00dbaa889b88513dc2d31730807524f4c1d0/mod.ts';
 
 await suite('node', async (t) => {
-    await t.suite('a node tree', async () => {
+    await t.suite('a node tree', async (t) => {
         class NodeImpl implements Node {
             constructor(private _genCode: Node[] | string) {}
 
@@ -30,5 +30,23 @@ await suite('node', async (t) => {
                 );
             },
         );
+
+        await t.test('a list of nodes may be passed to reader', async () => {
+            const reader = new Reader(['before', node, 'after']);
+
+            const decoder = new TextDecoder('utf-8');
+            assertEquals(
+                decoder.decode(await Deno.readAll(reader)),
+                'before\na\nb\nc\nd\nafter\n',
+            );
+        });
+
+        t.test('may be converted into string', () => {
+            assertEquals(codeToString(node), 'a\nb\nc\nd\n');
+        });
+
+        t.test('a list of node may be converted to string', () => {
+            assertEquals(codeToString(['a', 'b', 'c']), 'a\nb\nc\n');
+        });
     });
 });

@@ -1,5 +1,5 @@
 import { assert, assertEquals } from 'https://deno.land/std/testing/asserts.ts';
-import { suite } from 'https://raw.githubusercontent.com/Andrepuel/testtree/ea4c72f0627d87c0284d0ba1952e9c33c0a1de30/mod.ts';
+import { suite } from 'https://raw.githubusercontent.com/Andrepuel/testtree/bceb00dbaa889b88513dc2d31730807524f4c1d0/mod.ts';
 import {
     parse,
     Class,
