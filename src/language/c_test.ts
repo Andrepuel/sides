@@ -2,7 +2,7 @@ import { assert } from 'https://deno.land/std/testing/asserts.ts';
 import { assertEquals } from '../assert.ts';
 import * as c from './c.ts';
 import * as ctx from '../context.ts';
-import { Node } from '../notation.ts';
+import { Node, codeToString } from '../notation.ts';
 import { suite } from 'https://raw.githubusercontent.com/Andrepuel/testtree/bceb00dbaa889b88513dc2d31730807524f4c1d0/mod.ts';
 
 suite('c', (t) => {
@@ -177,7 +177,10 @@ suite('c', (t) => {
         const stub = new c.Stub('coisa_t');
 
         t.test('generates stub code', () => {
-            assertEquals(stub.genCode(), 'typedef struct coisa_s coisa_t;');
+            assertEquals(
+                codeToString(stub),
+                'typedef struct coisa_s coisa_t;\n',
+            );
         });
     });
 
@@ -400,6 +403,58 @@ suite('c', (t) => {
                 functionPointer.genCode(),
                 'custom_t* (*coisa)(coisa_t* a1, int a2)',
             );
+        });
+    });
+
+    class AStruct extends c.Struct {
+        constructor(public members: c.NameType[]) {
+            super();
+        }
+
+        name = 'astruct_t';
+    }
+
+    t.suite('struct', (t) => {
+        const aStruct = new AStruct([
+            {
+                name: 'coisa',
+                type: new CoisaClass(),
+            },
+            {
+                name: 'primitive',
+                type: new c.PrimitiveType('i32'),
+            },
+        ]);
+
+        t.test('has stub', () => {
+            assertEquals(aStruct.stub, new c.Stub('astruct_t'));
+        });
+
+        t.test('paramname is name pointer syntax', () => {
+            assertEquals(aStruct.paramname, 'astruct_t*');
+        });
+
+        t.test('is a list of its members', () => {
+            assertEquals(
+                codeToString(aStruct),
+                'typedef struct astruct_s {\n    coisa_t* coisa;\n    int primitive;\n} astruct_t;\n',
+            );
+        });
+
+        t.suite('with function pointer member', (t) => {
+            const functionPointer = new c.FunctionPointer(new CoisaFunction());
+            const aStruct = new AStruct([
+                {
+                    name: '',
+                    type: functionPointer,
+                },
+            ]);
+            t.test('uses the function pointer syntax', () => {
+                assertEquals(
+                    codeToString(aStruct),
+                    'typedef struct astruct_s {\n    custom_t* (*coisa)();\n} astruct_t;\n',
+                );
+            });
         });
     });
 });

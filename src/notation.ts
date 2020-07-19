@@ -25,8 +25,11 @@ class BaseReader {
         if (typeof nextText === 'string') {
             return nextText + '\n';
         } else {
-            assert(nextText instanceof Array); //FIXME
-            this.node = nextText.concat(this.node);
+            if (nextText instanceof Array) {
+                this.node = nextText.concat(this.node);
+            } else {
+                this.node = [nextText as Code].concat(this.node);
+            }
             return this.read();
         }
     }

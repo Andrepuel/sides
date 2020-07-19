@@ -1,6 +1,6 @@
 import * as ctx from '../context.ts';
 import { assert } from 'https://deno.land/std/testing/asserts.ts';
-import { Node } from '../notation.ts';
+import { Node, Code, codeToString } from '../notation.ts';
 import { Identifier } from '../identifier.ts';
 import { some } from '../assert.ts';
 
@@ -17,6 +17,12 @@ function distinct<K, T>(index: Set<K>, keyCb: (t: T) => K): (t: T) => boolean {
 
         index.add(key);
         return true;
+    };
+}
+
+function indent(a: Code | Code[]): Node {
+    return {
+        genCode: () => '    ' + codeToString(a).slice(0, -1),
     };
 }
 
@@ -81,16 +87,35 @@ export abstract class Function implements Method {
     }
 }
 
+export class Typedef implements Node {
+    constructor(private name: string, private body: undefined | Code[]) {}
+
+    public genCode(): Code | Code[] {
+        const structName = Identifier.fromSnake(this.name);
+        const underlineT = structName.comps.pop();
+        assert(underlineT === 't');
+        structName.comps.push('s');
+
+        const typedef = `typedef struct ${structName.toSnake()}`;
+        const name = `${this.name};`;
+
+        if (this.body === undefined) {
+            return `${typedef} ${name}`;
+        } else {
+            return [`${typedef} {` as Code]
+                .concat(this.body.map(indent))
+                .concat(`} ${name}`);
+        }
+    }
+}
+
 export class Stub implements Node {
     constructor(public struct: string) {
         assert(this.struct.endsWith('_t'));
     }
 
-    public genCode(): string {
-        return `typedef struct ${this.struct.slice(
-            0,
-            this.struct.length - 2,
-        )}_s ${this.struct};`;
+    public genCode(): Node {
+        return new Typedef(this.struct, undefined);
     }
 }
 
@@ -237,7 +262,10 @@ export class ClassSpec extends Class {
     }
 }
 
-export class FunctionPointer implements Method {
+export class FunctionPointer implements Method, Type {
+    stub = undefined;
+    paramname = '';
+
     constructor(private method: Method) {}
 
     get name(): string {
@@ -261,5 +289,36 @@ export class FunctionPointer implements Method {
             .map((arg) => `${arg.type.paramname} ${arg.name}`)
             .join(', ');
         return `${this.ret.paramname} (*${this.name})(${args})`;
+    }
+}
+
+class StructMember implements Node {
+    constructor(private nameType: NameType) {}
+
+    genCode(): string {
+        if (this.nameType.type instanceof FunctionPointer) {
+            return `${this.nameType.type.genCode()};`;
+        }
+        return `${this.nameType.type.paramname} ${this.nameType.name};`;
+    }
+}
+
+export abstract class Struct implements Type, Node {
+    abstract get name(): string;
+    abstract get members(): NameType[];
+
+    get paramname(): string {
+        return `${this.name}*`;
+    }
+
+    get stub(): Stub {
+        return new Stub(this.name);
+    }
+
+    genCode(): Code {
+        return new Typedef(
+            this.name,
+            this.members.map((m) => new StructMember(m)),
+        );
     }
 }

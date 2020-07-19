@@ -1,17 +1,17 @@
-import { Node, Reader, codeToString } from './notation.ts';
+import { Node, Reader, codeToString, Code } from './notation.ts';
 import { assertEquals } from './assert.ts';
 import { suite } from 'https://raw.githubusercontent.com/Andrepuel/testtree/bceb00dbaa889b88513dc2d31730807524f4c1d0/mod.ts';
 
 await suite('node', async (t) => {
-    await t.suite('a node tree', async (t) => {
-        class NodeImpl implements Node {
-            constructor(private _genCode: Node[] | string) {}
+    class NodeImpl implements Node {
+        constructor(private _genCode: Code | Code[]) {}
 
-            genCode(): Node[] | string {
-                return this._genCode;
-            }
+        genCode(): Code | Code[] {
+            return this._genCode;
         }
+    }
 
+    await t.suite('a node tree', async (t) => {
         const node = new NodeImpl([
             new NodeImpl('a'),
             new NodeImpl([new NodeImpl('b'), new NodeImpl('c')]),
@@ -48,5 +48,8 @@ await suite('node', async (t) => {
         t.test('a list of node may be converted to string', () => {
             assertEquals(codeToString(['a', 'b', 'c']), 'a\nb\nc\n');
         });
+    });
+    t.test('gencode may return another node', () => {
+        assertEquals(codeToString(new NodeImpl(new NodeImpl('a'))), 'a\n');
     });
 });
