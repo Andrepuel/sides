@@ -242,15 +242,23 @@ export class MemberSpecMethod extends SpecMethod {
     }
 }
 
+class SpecBased {
+    constructor(protected spec: ctx.Element) {}
+
+    get name(): string {
+        const id = Identifier.fromCamel(this.spec.name);
+        id.comps.push('t');
+        return id.toSnake();
+    }
+}
+
 export class ClassSpec extends Class {
     constructor(private spec: ctx.Class, private ctx: Context) {
         super();
     }
 
     get name(): string {
-        const id = Identifier.fromCamel(this.spec.name);
-        id.comps.push('t');
-        return id.toSnake();
+        return new SpecBased(this.spec).name;
     }
 
     get methods(): Function[] {
@@ -320,5 +328,49 @@ export abstract class Struct implements Type, Node {
             this.name,
             this.members.map((m) => new StructMember(m)),
         );
+    }
+}
+
+export class VtableSpec extends Struct {
+    constructor(
+        private self: Type,
+        private spec: ctx.Interface,
+        private context: Context,
+    ) {
+        super();
+    }
+
+    get name(): string {
+        const name = Identifier.fromCamel(this.spec.name);
+        name.comps.push('_sides', 'vtable', 't');
+        return name.toSnake();
+    }
+
+    get members(): NameType[] {
+        return this.spec.methods.map((method) => ({
+            name: '',
+            type: new FunctionPointer(
+                new MemberSpecMethod(this.self, method, this.context),
+            ),
+        }));
+    }
+}
+
+export class InterfaceSpec extends Struct {
+    constructor(private spec: ctx.Interface, private context: Context) {
+        super();
+    }
+
+    get name(): string {
+        return new SpecBased(this.spec).name;
+    }
+
+    get members(): NameType[] {
+        return [
+            {
+                name: new Identifier(['_sides', 'vtable']).toSnake(),
+                type: new VtableSpec(this, this.spec, this.context),
+            },
+        ];
     }
 }

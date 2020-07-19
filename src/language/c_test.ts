@@ -305,6 +305,11 @@ suite('c', (t) => {
                 methods: [sidesDeinit].concat(classSpec.methods),
             };
 
+            const vtableSpec: ctx.Interface = {
+                name: 'CoisaDeCamelo',
+                methods: [sidesDeinit, memberSpec],
+            };
+
             t.suite('the spec based class', (t) => {
                 const clss = new c.ClassSpec(classSpec, context);
 
@@ -316,6 +321,59 @@ suite('c', (t) => {
                     assertEquals(clss.methods, [
                         new c.SpecMethod(clss, staticSpec, context),
                         new c.MemberSpecMethod(clss, memberSpec, context),
+                    ]);
+                });
+            });
+
+            t.suite('the spec based interface', (t) => {
+                const interfac = new c.InterfaceSpec(vtableSpec, context);
+                const vtable = new c.VtableSpec(interfac, vtableSpec, context);
+
+                t.test('vtable name is camel case followed by t', () => {
+                    assertEquals(
+                        vtable.name,
+                        'coisa_de_camelo__sides_vtable_t',
+                    );
+                });
+
+                t.test(
+                    'vtable members will be function pointer to each method',
+                    () => {
+                        assertEquals(vtable.members, [
+                            {
+                                name: '',
+                                type: new c.FunctionPointer(
+                                    new c.MemberSpecMethod(
+                                        interfac,
+                                        sidesDeinit,
+                                        context,
+                                    ),
+                                ),
+                            },
+                            {
+                                name: '',
+                                type: new c.FunctionPointer(
+                                    new c.MemberSpecMethod(
+                                        interfac,
+                                        memberSpec,
+                                        context,
+                                    ),
+                                ),
+                            },
+                        ]);
+                    },
+                );
+
+                t.test('name is camel case followed by t', () => {
+                    assertEquals(interfac.name, 'coisa_de_camelo_t');
+                });
+
+                t.test('members is a pointer to vtable', () => {
+                    assertEquals(interfac.members, [
+                        {
+                            name: '_sides_vtable',
+                            type: vtable,
+                        },
                     ]);
                 });
             });
