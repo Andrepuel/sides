@@ -91,8 +91,8 @@ suite('c', (t) => {
     t.suite('class with methods', (t) => {
         const clss = new CoisaClass([new CoisaFunction()]);
 
-        t.test('code will be functions', () => {
-            assertEquals(clss.genCode(), [new CoisaFunction()]);
+        t.test('code will be stub followed by functions', () => {
+            assertEquals(clss.genCode(), [clss.stub, new CoisaFunction()]);
         });
     });
 
@@ -122,8 +122,8 @@ suite('c', (t) => {
             assertEquals(file.name, 'coisa.h');
         });
 
-        t.test('content is the class itself and stub', () => {
-            assertEquals(file.content, [clss.stub, clss]);
+        t.test('content is the class', () => {
+            assertEquals(file.content, [clss]);
         });
 
         t.suite('and function with deps', (t) => {
@@ -134,25 +134,20 @@ suite('c', (t) => {
             ]);
             clss.methods.push(functionWithDeps);
             t.test('it includes external dependencies on args as stub', () => {
-                assertEquals(file.content, [clss2.stub, clss.stub, clss]);
+                assertEquals(file.content, [clss2.stub, clss]);
             });
 
             t.test('it includes external dependencies on ret as stub', () => {
                 const clss3 = new CoisaClass();
                 clss3.name = 'three_t';
                 functionWithDeps.ret = clss3;
-                assertEquals(file.content, [
-                    clss2.stub,
-                    clss3.stub,
-                    clss.stub,
-                    clss,
-                ]);
+                assertEquals(file.content, [clss2.stub, clss3.stub, clss]);
             });
 
             t.test('it does not repeat types', () => {
                 functionWithDeps.args.push({ name: 'other', type: clss });
                 functionWithDeps.args.push({ name: 'twoAgain', type: clss2 });
-                assertEquals(file.content, [clss2.stub, clss.stub, clss]);
+                assertEquals(file.content, [clss2.stub, clss]);
             });
         });
     });
@@ -327,53 +322,15 @@ suite('c', (t) => {
 
             t.suite('the spec based interface', (t) => {
                 const interfac = new c.InterfaceSpec(vtableSpec, context);
-                const vtable = new c.VtableSpec(interfac, vtableSpec, context);
-
-                t.test('vtable name is camel case followed by t', () => {
-                    assertEquals(
-                        vtable.name,
-                        'coisa_de_camelo__sides_vtable_t',
-                    );
-                });
-
-                t.test(
-                    'vtable members will be function pointer to each method',
-                    () => {
-                        assertEquals(vtable.members, [
-                            {
-                                name: '',
-                                type: new c.FunctionPointer(
-                                    new c.MemberSpecMethod(
-                                        interfac,
-                                        sidesDeinit,
-                                        context,
-                                    ),
-                                ),
-                            },
-                            {
-                                name: '',
-                                type: new c.FunctionPointer(
-                                    new c.MemberSpecMethod(
-                                        interfac,
-                                        memberSpec,
-                                        context,
-                                    ),
-                                ),
-                            },
-                        ]);
-                    },
-                );
 
                 t.test('name is camel case followed by t', () => {
                     assertEquals(interfac.name, 'coisa_de_camelo_t');
                 });
 
-                t.test('members is a pointer to vtable', () => {
-                    assertEquals(interfac.members, [
-                        {
-                            name: '_sides_vtable',
-                            type: vtable,
-                        },
+                t.test('functions are member methods', () => {
+                    assertEquals(interfac.methods, [
+                        new c.MemberSpecMethod(interfac, sidesDeinit, context),
+                        new c.MemberSpecMethod(interfac, memberSpec, context),
                     ]);
                 });
             });
@@ -512,6 +469,82 @@ suite('c', (t) => {
                     codeToString(aStruct),
                     'typedef struct astruct_s {\n    custom_t* (*coisa)();\n} astruct_t;\n',
                 );
+            });
+        });
+    });
+
+    t.suite('vtable', (t) => {
+        const args: c.NameType[] = [
+            {
+                name: 'a1',
+                type: new CoisaClass(),
+            },
+        ];
+        const vtable = new c.Vtable(new CoisaClass(), [
+            new CoisaFunction(),
+            new CoisaFunction(args),
+        ]);
+
+        t.test('name is the name of the self', () => {
+            assertEquals(vtable.name, 'coisa_t');
+        });
+
+        t.test('members is a function pointer of each method', () => {
+            assertEquals(vtable.members, [
+                {
+                    name: '',
+                    type: new c.FunctionPointer(new CoisaFunction()),
+                },
+                {
+                    name: '',
+                    type: new c.FunctionPointer(new CoisaFunction(args)),
+                },
+            ]);
+        });
+    });
+
+    class CoisaInterface extends c.Interface {
+        name = 'coisa_t';
+        methods = [new CoisaFunction()];
+    }
+
+    t.suite('interface', (t) => {
+        const coisa = new CoisaInterface();
+        const struct = new c.InterfaceStruct(coisa);
+
+        t.test('struct name is interface name', () => {
+            assertEquals(struct.name, 'coisa_t');
+        });
+
+        t.test('struct members is a pointer to the vtable', () => {
+            assertEquals(struct.members, [
+                {
+                    name: '_sides_vtable',
+                    type: new c.Vtable(coisa, [new CoisaFunction()]),
+                },
+            ]);
+        });
+
+        t.test('paramname is function pointer', () => {
+            assertEquals(coisa.paramname, 'coisa_t*');
+        });
+
+        t.test('stub is struct stub', () => {
+            assertEquals(coisa.stub, new c.Stub('coisa_t'));
+        });
+
+        t.test('gencode is vtable and struct', () => {
+            assertEquals(coisa.genCode(), [
+                new c.Vtable(coisa, [new CoisaFunction()]),
+                struct,
+            ]);
+        });
+
+        t.suite('file', (t) => {
+            const file = new c.ClassFile(coisa);
+
+            t.test('contents is interface', () => {
+                assertEquals(file.content, [coisa]);
             });
         });
     });

@@ -119,16 +119,18 @@ export class Stub implements Node {
     }
 }
 
-export abstract class Class implements Type, Node {
+export abstract class Class implements Type, Node, ctx.Class<Type> {
     abstract get name(): string;
     abstract get methods(): Function[];
+
+    languages = [];
 
     public get stub(): Stub {
         return new Stub(this.name);
     }
 
     public genCode(): Node[] {
-        return this.methods;
+        return [this.stub as Node].concat(this.methods);
     }
 
     public get paramname(): string {
@@ -156,7 +158,7 @@ export abstract class File implements Node {
 }
 
 export class ClassFile extends File {
-    constructor(private clss: Class) {
+    constructor(private clss: Class | Interface) {
         super();
     }
 
@@ -180,7 +182,7 @@ export class ClassFile extends File {
                     .filter(isDefined),
             )
             .reduce((a, b) => a.concat(b), []);
-        return typeStubs.concat([this.clss.stub!, this.clss]);
+        return typeStubs.concat([this.clss]);
     }
 }
 
@@ -331,32 +333,61 @@ export abstract class Struct implements Type, Node {
     }
 }
 
-export class VtableSpec extends Struct {
-    constructor(
-        private self: Type,
-        private spec: ctx.Interface,
-        private context: Context,
-    ) {
+export class InterfaceStruct extends Struct {
+    constructor(private self: Interface) {
         super();
     }
 
     get name(): string {
-        const name = Identifier.fromCamel(this.spec.name);
-        name.comps.push('_sides', 'vtable', 't');
-        return name.toSnake();
+        return this.self.name;
+    }
+    get members(): NameType[] {
+        return [
+            {
+                name: new Identifier(['_sides', 'vtable']).toSnake(),
+                type: new Vtable(this.self, this.self.methods),
+            },
+        ];
+    }
+}
+
+export abstract class Interface implements Type, Node, ctx.Interface<Type> {
+    private struct = new InterfaceStruct(this);
+
+    abstract get name(): string;
+    abstract get methods(): Function[];
+
+    get stub(): Stub {
+        return this.struct.stub;
+    }
+
+    get paramname(): string {
+        return this.struct.paramname;
+    }
+
+    genCode(): Node[] {
+        return [new Vtable(this, this.methods), new InterfaceStruct(this)];
+    }
+}
+
+export class Vtable extends Struct {
+    constructor(private self: Type, private methods: Function[]) {
+        super();
+    }
+
+    get name(): string {
+        return this.self.name;
     }
 
     get members(): NameType[] {
-        return this.spec.methods.map((method) => ({
+        return this.methods.map((method) => ({
             name: '',
-            type: new FunctionPointer(
-                new MemberSpecMethod(this.self, method, this.context),
-            ),
+            type: new FunctionPointer(method),
         }));
     }
 }
 
-export class InterfaceSpec extends Struct {
+export class InterfaceSpec extends Interface {
     constructor(private spec: ctx.Interface, private context: Context) {
         super();
     }
@@ -365,12 +396,9 @@ export class InterfaceSpec extends Struct {
         return new SpecBased(this.spec).name;
     }
 
-    get members(): NameType[] {
-        return [
-            {
-                name: new Identifier(['_sides', 'vtable']).toSnake(),
-                type: new VtableSpec(this, this.spec, this.context),
-            },
-        ];
+    get methods(): Function[] {
+        return this.spec.methods.map(
+            (spec) => new MemberSpecMethod(this, spec, this.context),
+        );
     }
 }
