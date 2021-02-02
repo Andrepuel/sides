@@ -1,4 +1,4 @@
-import { assert } from 'https://deno.land/std/testing/asserts.ts';
+import { assert } from 'std/testing/asserts.ts';
 
 export type Code = string | Node;
 export interface Node {
@@ -50,6 +50,8 @@ export class Reader implements Deno.Reader {
     }
 
     async read(p: Uint8Array): Promise<number | null> {
+        await Promise.resolve();
+
         const nextText = this.reader.read();
 
         if (nextText === null) {

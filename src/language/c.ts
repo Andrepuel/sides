@@ -1,5 +1,5 @@
 import * as ctx from '../context.ts';
-import { assert } from 'https://deno.land/std/testing/asserts.ts';
+import { assert } from 'std/testing/asserts.ts';
 import { Node, Code, codeToString } from '../notation.ts';
 import { Identifier } from '../identifier.ts';
 import { some } from '../assert.ts';
@@ -68,11 +68,11 @@ export class PrimitiveType implements Type {
     }
 
     public get stub(): undefined {
-        return;
+        return undefined;
     }
 }
 
-export abstract class Function implements Method {
+export abstract class CFunction implements Method {
     abstract get name(): string;
     abstract get args(): NameType[];
     abstract get ret(): Type;
@@ -121,7 +121,7 @@ export class Stub implements Node {
 
 export abstract class Class implements Type, Node, ctx.Class<Type> {
     abstract get name(): string;
-    abstract get methods(): Function[];
+    abstract get methods(): CFunction[];
 
     languages = [];
 
@@ -186,7 +186,7 @@ export class ClassFile extends File {
     }
 }
 
-export class SpecMethod extends Function {
+export class SpecMethod extends CFunction {
     constructor(
         public self: Type,
         public spec: ctx.Method,
@@ -263,7 +263,7 @@ export class ClassSpec extends Class {
         return new SpecBased(this.spec).name;
     }
 
-    get methods(): Function[] {
+    get methods(): CFunction[] {
         return this.spec.methods.map((spec) =>
             spec.staticMethod
                 ? new SpecMethod(this, spec, this.ctx)
@@ -357,7 +357,7 @@ export abstract class Interface implements Type, Node, ctx.Interface<Type> {
     }
 
     abstract get name(): string;
-    abstract get methods(): Function[];
+    abstract get methods(): CFunction[];
 
     get stub(): Stub {
         return this.struct.stub;
@@ -381,7 +381,7 @@ export abstract class Interface implements Type, Node, ctx.Interface<Type> {
 }
 
 export class Vtable extends Struct {
-    constructor(private self: Type, private methods: Function[]) {
+    constructor(private self: Type, private methods: CFunction[]) {
         super();
     }
 
@@ -410,7 +410,7 @@ export class InterfaceSpec extends Interface {
         return new SpecBased(this.spec).name;
     }
 
-    get methods(): Function[] {
+    get methods(): CFunction[] {
         return this.spec.methods.map(
             (spec) => new MemberSpecMethod(this, spec, this.context),
         );

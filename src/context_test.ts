@@ -1,5 +1,5 @@
-import { assert, assertEquals } from 'https://deno.land/std/testing/asserts.ts';
-import { suite } from 'https://raw.githubusercontent.com/Andrepuel/testtree/bceb00dbaa889b88513dc2d31730807524f4c1d0/mod.ts';
+import { assert, assertEquals } from 'std/testing/asserts.ts';
+import { suite } from 'testtree';
 import {
     parse,
     Class,
@@ -136,7 +136,7 @@ suite('parser', (t) => {
     t.suite('method', (t) => {
         function equals(name: string, spec: string, expect: Method) {
             t.test(name, () => {
-                let methods = parse(`Placeholder = class { ${spec} }`)[0]
+                const methods = parse(`Placeholder = class { ${spec} }`)[0]
                     .methods;
                 assert(methods);
                 assertEquals(methods[0], expect);

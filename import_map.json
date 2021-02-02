@@ -1,0 +1,6 @@
+{
+    "imports": {
+        "std/": "https://deno.land/std@0.83.0/",
+        "testtree": "https://raw.githubusercontent.com/Andrepuel/testtree/f6e268328a34cf7bf658dca2a800dbe281908dba/mod.ts"
+    }
+}

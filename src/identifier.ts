@@ -2,9 +2,9 @@ export class Identifier {
     constructor(public comps: string[]) {}
 
     public static fromCamel(camel: string): Identifier {
-        let comps: string[] = [];
+        const comps: string[] = [];
         while (camel.length > 0) {
-            let pos = camel.slice(1).search('[A-Z]');
+            const pos = camel.slice(1).search('[A-Z]');
             let found;
 
             if (pos >= 0) {

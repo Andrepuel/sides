@@ -1,6 +1,6 @@
 import { Identifier } from './identifier.ts';
 import { assertEquals } from './assert.ts';
-import { suite } from 'https://raw.githubusercontent.com/Andrepuel/testtree/bceb00dbaa889b88513dc2d31730807524f4c1d0/mod.ts';
+import { suite } from 'testtree';
 
 suite('identifier', (t) => {
     t.suite('identifier', (t) => {

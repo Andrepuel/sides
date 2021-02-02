@@ -1,4 +1,4 @@
-import * as a from 'https://deno.land/std/testing/asserts.ts';
+import * as a from 'std/testing/asserts.ts';
 
 export function some<T>(t: T | undefined): T {
     a.assert(t);

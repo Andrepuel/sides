@@ -1,6 +1,6 @@
 import { Node, Reader, codeToString, Code } from './notation.ts';
 import { assertEquals } from './assert.ts';
-import { suite } from 'https://raw.githubusercontent.com/Andrepuel/testtree/bceb00dbaa889b88513dc2d31730807524f4c1d0/mod.ts';
+import { suite } from 'testtree';
 
 await suite('node', async (t) => {
     class NodeImpl implements Node {

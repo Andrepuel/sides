@@ -1,9 +1,8 @@
-import { assert } from 'https://deno.land/std/testing/asserts.ts';
 import { assertEquals } from '../assert.ts';
 import * as c from './c.ts';
 import * as ctx from '../context.ts';
 import { Node, codeToString } from '../notation.ts';
-import { suite } from 'https://raw.githubusercontent.com/Andrepuel/testtree/bceb00dbaa889b88513dc2d31730807524f4c1d0/mod.ts';
+import { suite } from 'testtree';
 
 suite('c', (t) => {
     t.suite('primitive int', (t) => {
@@ -48,15 +47,15 @@ suite('c', (t) => {
         stub: undefined,
     };
 
-    class CoisaFunction extends c.Function {
+    class CoisaFunction extends c.CFunction {
         constructor(public args: c.NameType[] = []) {
             super();
         }
 
-        name: string = 'coisa';
-        ret: c.Type = simpleCtype;
-        asyncMethod: boolean = false;
-        staticMethod: boolean = false;
+        name = 'coisa';
+        ret = simpleCtype;
+        asyncMethod = false;
+        staticMethod = false;
     }
 
     t.suite('function with args', (t) => {
@@ -82,10 +81,10 @@ suite('c', (t) => {
     });
 
     class CoisaClass extends c.Class {
-        constructor(public methods: c.Function[] = []) {
+        constructor(public methods: c.CFunction[] = []) {
             super();
         }
-        name: string = 'coisa_t';
+        name = 'coisa_t';
     }
 
     t.suite('class with methods', (t) => {
@@ -100,7 +99,7 @@ suite('c', (t) => {
         constructor(public content: Node[] = []) {
             super();
         }
-        name: string = 'name';
+        name = 'name';
     }
 
     t.suite('c file', (t) => {
@@ -360,7 +359,7 @@ suite('c', (t) => {
                     );
                 });
 
-                for (let name of [
+                for (const name of [
                     'i8',
                     'i16',
                     'i32',
